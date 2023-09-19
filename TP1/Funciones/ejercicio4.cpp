@@ -1,15 +1,46 @@
 // El presupuesto anual de una empresa se distribuye entre sus áreas, se solicita desarrollar un programa para poder registrar el porcentaje
 // y el monto distribuido entre las áreas en una estructura de datos (arreglo bidimensional) luego de que la junta directiva decide 
-// el presupuesto total anual. Por otro lado, se solicita desarrollar una función para registrar gastos asociados a cada área donde se 
-// debe controlar si dicho gasto es posible o no de acuerdo a los gastos ya registrados. Finalmente debe haber otra función que indique 
-// el saldo disponible actual de cada área y el porcentaje que han utilizado de su disponible. Desarrolle el menú correspondiente para 
-// su mejor operatividad.
+// el presupuesto total anual. 
+// Por otro lado, se solicita desarrollar una función para registrar gastos asociados a cada área donde se 
+// debe controlar si dicho gasto es posible o no de acuerdo a los gastos ya registrados.
+// Finalmente debe haber otra función que indique el saldo disponible actual de cada área y el porcentaje que han utilizado de su disponible. 
+
+// Desarrolle el menú correspondiente para su mejor operatividad.
 
 #include <iostream>
 #include <string.h>
 #include <stdlib.h>
+#include <vector>
 
 using namespace std;
+
+float gastos_registrados_por_area(string area, float presupuesto_area, float acc) {
+    float gasto;
+    while(acc <= presupuesto_area) {
+        cout << "Ingrese el gasto realizado por el area " << area << ": ";
+        cin >> gasto;
+        acc += gasto;
+        if (gasto > presupuesto_area || acc > presupuesto_area) {
+            cout << "El gasto no es posible porque supera el presupuesto." << endl;
+            acc -= gasto;
+            return acc;
+        }
+        int res;
+        cout << "Desea ingresar mas gastos?" << endl << "1- SI" << endl << "2- NO" << endl;
+        cin >> res;
+        if (res == 2) {
+            return acc;
+        } else {
+            continue;
+        }
+    }
+}
+
+void saldo_disponible(string area, float presupuesto_area, float acc) {
+    cout << "**AREA " << area << endl;
+    cout << "Saldo disponible: $ " << presupuesto_area - acc << endl;
+    cout << "Porcentaje utilizado: " << acc*100/presupuesto_area << " %" << endl;
+}
 
 int main() {
     int presupuesto;
@@ -40,6 +71,7 @@ int main() {
         cin >> porcentajes[i];
     }
 
+    cout << endl;
     cout << "En resumen:" << endl;
     for (int i=0; i<N; i++) {
         cout << "Al area de " << areas[i] << " le corresponde el " << porcentajes[i] << " % del presupuesto." << endl;
@@ -54,6 +86,36 @@ int main() {
         cout << "Al area de " << areas[i] << " le corresponde $" << presupuesto_areas[i] << endl;
     }
 
+    
+    int opcion, salir;
+    vector<float> gastos_acumulados(N, 0); //Inicializo el vector con ceros
+    bool flat = true;
+    
+    cout << endl;
+    cout << "REGISTRO DE GASTOS POR AREA" << endl;
+    while (flat) {
+        cout << "Para salir de este menu presione 0. Para continuar presione 1: ";
+        cin >> salir;
+        if (salir == 0) {
+            flat = false;
+        } else {
+            cout << "Seleccione el area para la cual desea registrar gastos:" << endl;
+            for (int j=0; j<N; j++) {
+                cout << "Presione " << j+1 << " para el area " << areas[j] << endl;
+            }
+            cin >> opcion;
+            gastos_acumulados[opcion-1] = gastos_registrados_por_area(areas[opcion-1], presupuesto_areas[opcion-1], gastos_acumulados[opcion-1]);
+            
+            cout << "El gasto total del area " << areas[opcion-1] << " es de: $" << gastos_acumulados[opcion-1] << endl;
+        }
+    }
+    cout << "Salio del menu para registrar gastos con exito." << endl;
+
+    cout << endl;
+    cout << "SALDOS DISPONIBLES" << endl;
+    for (int i=0; i<N; i++) {
+        saldo_disponible(areas[i], presupuesto_areas[i], gastos_acumulados[i]);
+    }
 
     return 0;
 }
