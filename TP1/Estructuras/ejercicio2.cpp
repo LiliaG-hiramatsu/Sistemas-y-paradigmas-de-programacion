@@ -24,10 +24,11 @@ float calcular_media(int notas_alumno[]) {
     for (int i=0; i<6; i++) {
         suma += notas_alumno[i];
     }
-    return suma/6;
+    return static_cast<float>(suma) / static_cast<float>(6);
 }
 
 void mejores_promedios(alumnos arr[], float promedios[]) {
+    
     for (int i=0; i<N-1; i++) {
         int posmenor = i;
         for (int j=i+1; j<N; j++) {
@@ -45,18 +46,19 @@ void mejores_promedios(alumnos arr[], float promedios[]) {
         arr[i] = arr[posmenor];
         arr[posmenor] = auxAlumno;
     }
-    
-    cout << "MEJORES PROMEDIOS" << endl;
-    for (int i=0; i<N-7; i++) {
-        cout << arr[N-i].nombre << endl;
-        cout << arr[N-i].apellido << endl;
-        cout << promedios[N-i] << endl;
+
+    cout << "TRES MEJORES PROMEDIOS" << endl;
+    for (int i=1; i<=N-2; i++) {
+        cout << "Nombre: " << arr[N-i].nombre << endl;
+        cout << "Apellido: " << arr[N-i].apellido << endl;
+        cout << "Promedio: " << promedios[N-i] << endl;
     }
 }
 
 int main() {
     cout << "Ingrese los datos de los alumnos" << endl;
     for (int i=0; i<N; i++) {
+        
         cout << "Nombre: ";
         cin >> vecAlum[i].nombre;
         cin.ignore();
