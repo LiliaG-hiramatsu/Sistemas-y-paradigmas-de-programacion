@@ -4,119 +4,146 @@
 // Por otro lado, se solicita desarrollar una función para registrar gastos asociados a cada área donde se 
 // debe controlar si dicho gasto es posible o no de acuerdo a los gastos ya registrados.
 // Finalmente debe haber otra función que indique el saldo disponible actual de cada área y el porcentaje que han utilizado de su disponible. 
-
 // Desarrolle el menú correspondiente para su mejor operatividad.
 
 #include <iostream>
 #include <string.h>
 #include <stdlib.h>
 #include <vector>
+#include <sstream>
 
 using namespace std;
 
-float gastos_registrados_por_area(string area, float presupuesto_area, float acc) {
-    float gasto;
-    while(acc <= presupuesto_area) {
-        cout << "Ingrese el gasto realizado por el area " << area << ": ";
-        cin >> gasto;
-        acc += gasto;
-        if (gasto > presupuesto_area || acc > presupuesto_area) {
-            cout << "El gasto no es posible porque supera el presupuesto." << endl;
-            acc -= gasto;
-            return acc;
+#define N 3 // cantidad de areas
+#define M 5 // cantidad de gastos
+
+vector<vector<string>> areas(N, vector<string>(2));     // filas: cantidad de areas; columnas: codigo de area y nombre
+vector<vector<int>> presupuestos_areas(N, vector<int>(3));   // filas: cantidad de areas; columnas: codigo del area, porcentaje y presupuesto en pesos
+vector<vector<int>> gastos(N, vector<int>(M));
+vector<int> suma(M, 0);
+
+void configurarAreas(vector<vector<string>>& areas, vector<vector<int>>& presupuestos_areas, int presupuesto) {
+    for (int i=0; i < N; i++) {
+        cout << "Ingrese el codigo del area " << i+1 << ": ";
+        cin >> areas[i][0];
+        cout << "Ingrese el nombre del area " << areas[i][0] << ": ";
+        cin >> areas[i][1];
+        cout << "Ingrese el porcentaje destinado al area de " << areas[i][1] << ": ";
+        cin >> presupuestos_areas[i][1];
+        presupuestos_areas[i][2] = presupuestos_areas[i][1] * presupuesto / 100;
+        cout << "El monto en pesos destinado al area " << areas[i][1] << " es: $ " << presupuestos_areas[i][2] << endl;
+    }
+}
+
+void cargarGastos(vector<vector<string>>& areas, vector<vector<int>>& presupuestos_areas, vector<vector<int>>& gastos, int presupuesto) {
+    int acc = 0;
+    bool repetir = true;
+    while (repetir) {
+        cout << "\nSeleccione el area para la cual desea registrar gastos:" << endl;
+        for (int i=0; i<N; i++) {
+            cout << "Presione " << i+1 << " para el area " << areas[i][1] << endl;
         }
-        int res;
-        cout << "Desea ingresar mas gastos?" << endl << "1- SI" << endl << "2- NO" << endl;
-        cin >> res;
-        if (res == 2) {
-            return acc;
-        } else {
-            continue;
+        int opcion;
+        cin >> opcion;
+        cout << "Ingresar los gastos (en pesos) del area " << areas[opcion-1][1] << endl;
+        for (int j=0; j<M; j++) {
+            cin >> gastos[opcion-1][j];
+            acc += gastos[opcion-1][j];
+            if (acc > presupuestos_areas[opcion-1][2]) {
+                cout << "No hay fondos disponibles." << endl;
+                acc -= gastos[opcion-1][j];
+                j = M;
+            }
+        }
+        presupuestos_areas[opcion-1][2] -= acc;
+        presupuestos_areas[opcion-1][1] = presupuestos_areas[opcion-1][2]*100 / presupuesto;
+        cout << "El gasto total del area " << areas[opcion-1][1] << " es de: $ " << acc << endl;
+        cout << "\nDesea cargar gastos de otro area?" << endl << "1. SI" << endl << "2. NO" << endl;
+        int salir;
+        cin >> salir;
+        if (salir == 2) {
+            repetir = false;
         }
     }
 }
 
-void saldo_disponible(string area, float presupuesto_area, float acc) {
-    cout << "**AREA " << area << endl;
-    cout << "Saldo disponible: $ " << presupuesto_area - acc << endl;
-    cout << "Porcentaje utilizado: " << acc*100/presupuesto_area << " %" << endl;
+void verSaldo(vector<vector<string>>& areas, vector<vector<int>>& presupuestos_areas) {
+    for (int i=0; i<N; i++) {
+        cout << "Saldo disponible del area " << areas[i][1] << " es: $";
+        cout << presupuestos_areas[i][2] << endl;
+        cout << "Porcentaje utilizado: " << presupuestos_areas[i][1] << " %" << endl;
+    }
 }
 
 int main() {
-    int presupuesto;
-    cout << "Ingresar el presupuesto anual: ";
-    cin >> presupuesto;
-    while (presupuesto <= 0) {
-        cout << "Debe ingresar un presupuesto valido: ";
-        cin >> presupuesto;
-    }
-
-    int cantidad_areas;
-    cout << "Especifique cuantas areas existen en su empresa: ";
-    cin >> cantidad_areas;
-    cin.ignore(); // problema con el carácter de nueva línea que queda en el búfer
-    // se utiliza cin.ignore() para eliminar el carácter de nueva línea en el búfer antes de entrar en el bucle
-
-    string areas[cantidad_areas];
-    for (int i=0; i < cantidad_areas; i++) {
-        cout << "Ingrese el nombre del area " << i+1 << ": ";
-        getline(cin, areas[i]);
-    }
-    
-    int N = cantidad_areas;
-    float porcentajes[N];
-    cout << "Especifique el porcentaje de presupuesto destinado a cada area:" << endl;
-    for (int i=0; i<N; i++) {
-        cout << "Porcentaje para el area de " << areas[i] << ": ";
-        cin >> porcentajes[i];
-    }
-
-    cout << endl;
-    cout << "En resumen:" << endl;
-    for (int i=0; i<N; i++) {
-        cout << "Al area de " << areas[i] << " le corresponde el " << porcentajes[i] << " % del presupuesto." << endl;
-    }
-
-    float presupuesto_areas[N];
-    for (int i=0; i<N; i++) {
-        presupuesto_areas[i] = porcentajes[i] * presupuesto / 100;
-    }
-    cout << "El monto que le corresponde a cada area es:" << endl;
-    for (int i=0; i<N; i++) {
-        cout << "Al area de " << areas[i] << " le corresponde $" << presupuesto_areas[i] << endl;
-    }
-
-    
-    int opcion, salir;
-    vector<float> gastos_acumulados(N, 0); //Inicializo el vector con ceros
+    int presupuesto, opc;
     bool flat = true;
-    
-    cout << endl;
-    cout << "REGISTRO DE GASTOS POR AREA" << endl;
     while (flat) {
-        cout << "Para salir de este menu presione 0. Para continuar presione 1: ";
-        cin >> salir;
-        if (salir == 0) {
-            flat = false;
-        } else {
-            cout << "Seleccione el area para la cual desea registrar gastos:" << endl;
-            for (int j=0; j<N; j++) {
-                cout << "Presione " << j+1 << " para el area " << areas[j] << endl;
-            }
-            cin >> opcion;
-            gastos_acumulados[opcion-1] = gastos_registrados_por_area(areas[opcion-1], presupuesto_areas[opcion-1], gastos_acumulados[opcion-1]);
-            
-            cout << "El gasto total del area " << areas[opcion-1] << " es de: $" << gastos_acumulados[opcion-1] << endl;
+        cout << "\nMenu" << endl;
+        cout << "1. Ingresar presupuesto anual" << endl;
+        cout << "2. Ingresar areas y presupuesto destinado a ella" << endl;
+        cout << "3. Registrar gastos de cada area" << endl;
+        cout << "4. Ver el saldo actual disponible de cada area" << endl;
+        cout << "5. Ver areas y su presupuesto asociado" << endl;
+        cout << "6. Ver areas y los gastos realizados" << endl;
+        cout << "0. SALIR" << endl;
+
+        cout << "\nIngrese una opcion: ";
+        cin >> opc;
+
+        switch (opc) {
+            case 1:
+                cout << "Ingresar el presupuesto anual: ";
+                cin >> presupuesto;
+                if (presupuesto <= 0) {
+                    cout << "Debe ingresar un presupuesto valido." << endl;
+                    cout << "Ingresar el presupuesto anual: ";
+                    cin >> presupuesto;
+                }
+                cout << "El presupuesto es de: $ " << presupuesto << endl;
+                break;
+
+            case 2:
+                cout << "Cargar areas\n";
+                configurarAreas(areas, presupuestos_areas, presupuesto);
+                break;
+
+            case 3:
+                cout << "Cargar gastos\n";
+                cargarGastos(areas, presupuestos_areas, gastos, presupuesto);
+                break;
+
+            case 4:
+                cout << "Saldos disponibles\n";
+                verSaldo(areas, presupuestos_areas);
+                break;
+
+            case 5:
+                cout << "Areas y presupuestos\n";
+                for (int i=0; i<N; i++) {
+                    cout << "Al area " << areas[i][1] << " le corresponde $ " << presupuestos_areas[i][2] << endl;
+                }
+                break;
+
+            case 6:
+                cout << "Areas y gastos realizados\n";
+                for (int i=0; i<N; i++) {
+                    for (int j=0; j<M; j++) {
+                        suma[i] += gastos[i][j];
+                    }
+                    cout << "El area " << areas[i][1] << " gasto $ " << suma[i] << endl;
+                }
+                break;
+
+            case 0:
+                flat = false;
+                break;
+
+            default:
+                cout << "Ingresar una opcion valida";
+                break;
         }
     }
-    cout << "Salio del menu para registrar gastos con exito." << endl;
-
-    cout << endl;
-    cout << "SALDOS DISPONIBLES" << endl;
-    for (int i=0; i<N; i++) {
-        saldo_disponible(areas[i], presupuesto_areas[i], gastos_acumulados[i]);
-    }
-
     return 0;
 }
 
